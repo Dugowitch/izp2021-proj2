@@ -3,6 +3,7 @@ all:
 
 test:
 	./setcal sets.txt
+	@echo ""
 	@echo "expected result: "
 	@echo "U a b c x y z"
 	@echo "S a b c x"
@@ -10,6 +11,7 @@ test:
 	@echo "S x"
 	@echo "S a b c"
 	./setcal rel.txt
+	@echo ""
 	@echo "expected result: "
 	@echo "U dad mom girl boy man woman"
 	@echo "R (dad boy) (dad girl) (mom boy) (mom girl)"

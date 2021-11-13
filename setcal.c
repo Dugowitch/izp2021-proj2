@@ -1,6 +1,10 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <ctype.h>
+
+#define MAX_ELEM_LEN 31
+enum {ERR, U, S, R, C};
 
 typedef struct {
   char **arr;
@@ -66,9 +70,69 @@ void rel_print(rel_t *r){
   printf("\n");
 }
 
+/**
+ * @brief PARSE ARGS and RETURN FILE POINTER
+ */
+
+FILE *process_args(int argc, char *argv[]){
+  if (argc > 1){
+    return fopen(argv[1], "r");
+  }
+  return NULL;
+}
+
+/**
+ * @brief read first letter on a line
+ */
+
+int get_line_type(FILE *f){
+  char c;
+  c = fgetc(f);
+  if (c == 'U'){
+    return U;
+  }
+  else if (c == 'S'){
+    return S;
+  }
+  else if (c == 'R'){
+    return R;
+  }
+  else if (c == 'C'){
+    return C;
+  } else if (iscntrl(c)){
+    get_line_type(f);
+  }
+  return ERR;
+}
+
 int main(int argc, char *argv[]){
-  (void) argc;
-  (void) argv;
+  FILE *fp;
+  fp = process_args(argc, argv);
+  if (fp != NULL){
+    int line_type = get_line_type(fp);
+    while(line_type){
+      switch (line_type){
+        case S:
+          // TODO new set
+          break;
+        case R:
+          // TODO new relation
+          break;
+        case C:
+          // TODO new command
+          break;
+        case U:
+          // TODO set universe
+          break;
+      }
+      line_type = get_line_type(fp);
+    }
+    // TODO handle EOF
+  }
+  else {
+    // TODO throw err - could not load file
+  }
+  fclose(fp);  
 
   // vec_t v;
   // vec_init(&v, 3);

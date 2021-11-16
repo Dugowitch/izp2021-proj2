@@ -169,7 +169,7 @@ int main(int argc, char *argv[]){
   while(line_type){
     switch (line_type){
       case S:
-        // TODO new set
+        // TODO new vector
         break;
       case R:
         // TODO new relation

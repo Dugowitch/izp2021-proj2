@@ -13,6 +13,7 @@ typedef struct {
   char **arr;
   unsigned int used;
   unsigned int size;
+  unsigned int line;
 } vec_t;
 
 void vec_print(vec_t *v, char mode){
@@ -22,7 +23,7 @@ void vec_print(vec_t *v, char mode){
   printf("\n");
 }
 
-int vec_constructor(vec_t *v){
+int vec_constructor(vec_t *v, unsigned int line){
   v->arr = malloc(ALLOC_CONST * sizeof(char) * MAX_CHAR_SIZE);
   if (v->arr == NULL){
     // malloc failed
@@ -30,6 +31,7 @@ int vec_constructor(vec_t *v){
   }
   v->size = ALLOC_CONST;
   v->used = 0;
+  v->line = line;
   return 1;
 }
 
@@ -54,6 +56,7 @@ void vec_destructor(vec_t *v){
   }
   v->size = 0;
   v->used = 0;
+  v->line = 0;
 }
 
 /**
@@ -69,6 +72,7 @@ typedef struct {
   tuple_t *arr;
   unsigned int used;
   unsigned int size;
+  unsigned int line;
 } rel_t;
 
 void rel_print(rel_t *r){
@@ -78,15 +82,16 @@ void rel_print(rel_t *r){
   printf("\n");
 }
 
-int rel_constructor(rel_t *r){
+int rel_constructor(rel_t *r, unsigned int line){
   r->arr = malloc(ALLOC_CONST * 2 * sizeof(char) * MAX_CHAR_SIZE);
   if (r->arr == NULL){
     // malloc failed
-    return 0;
+    return 1;
   }
   r->size = ALLOC_CONST;
   r->used = 0;
-  return 1;
+  r->line = line;
+  return 0;
 }
 
 int rel_append(rel_t *r, char* elem1, char* elem2){
@@ -111,35 +116,93 @@ void rel_destructor(rel_t *r){
   }
   r->size = 0;
   r->used = 0;
+  r->line = 0;
+}
+
+/**
+ * @brief top level data structures
+ */
+
+typedef struct {
+  vec_t *arr;
+  unsigned used;
+  unsigned size;
+} vvec_t;
+
+int vvec_constructor(vvec_t *v){
+  v->arr = malloc(ALLOC_CONST * sizeof(vec_t));
+  if (v->arr == NULL){
+    // malloc failed
+    return 0;
+  }
+  v->size = ALLOC_CONST;
+  v->used = 0;
+  return 1;
+}
+
+void vvec_destructor(vvec_t *v){
+  if (v->arr != NULL){
+    free(v->arr);
+    v->arr = NULL;
+  }
+  v->size = 0;
+  v->used = 0;
+}
+
+typedef struct {
+  rel_t *arr;
+  unsigned used;
+  unsigned size;
+} vrel_t;
+
+int vrel_constructor(vrel_t *r){
+  r->arr = malloc(ALLOC_CONST * sizeof(rel_t));
+  if (r->arr == NULL){
+    // malloc failed
+    return 0;
+  }
+  r->size = ALLOC_CONST;
+  r->used = 0;
+  return 1;
+}
+
+void vrel_destructor(vrel_t *r){
+  if (r->arr != NULL){
+    free(r->arr);
+    r->arr = NULL;
+  }
+  r->size = 0;
+  r->used = 0;
 }
 
 int main(int argc, char *argv[]){
   (void) argc;
   (void) argv;
 
-  vec_t v;
-  if (!vec_constructor(&v)){
+  vvec_t vectors;
+  vvec_constructor(&vectors);
+  if (!vec_constructor(&(vectors.arr[0]), 0)){
     // throw err "Vector construction failed"
     return 1;
   }
-  vec_append(&v, "test");
-  vec_append(&v, "name");
-  vec_append(&v, "Jakub");
-  vec_append(&v, "ruka");
-  vec_print(&v, 'S');
-  vec_destructor(&v);
+  vec_append(&vectors.arr[0], "test");
+  vec_append(&vectors.arr[0], "name");
+  vec_append(&vectors.arr[0], "Jakub");
+  vec_append(&vectors.arr[0], "ruka");
+  vec_print(&vectors.arr[0], 'S');
+  vec_destructor(&vectors.arr[0]);
 
-  rel_t r;
-  if (!rel_constructor(&r)){
+  vrel_t relations;
+  if (!vrel_constructor(&relations)){
     // throw err "Relation construction failed"
     return 1;
   }
-  rel_append(&r, "test", "retest");
-  rel_append(&r, "name", "surname");
-  rel_append(&r, "Jakub", "Dugovic");
-  rel_append(&r, "ruka", "noha");
-  rel_print(&r);
-  rel_destructor(&r);
+  rel_append(&relations.arr[0], "test", "retest");
+  rel_append(&relations.arr[0], "name", "surname");
+  rel_append(&relations.arr[0], "Jakub", "Dugovic");
+  rel_append(&relations.arr[0], "ruka", "noha");
+  rel_print(&relations.arr[0]);
+  rel_destructor(&relations.arr[0]);
 
   return 0;
 }

@@ -130,7 +130,7 @@ int main(int argc, char *argv[]){
     // TODO handle EOF
   }
   else {
-    // TODO throw err - could not load file
+    // TODO throw err "could not load file"
   }
   fclose(fp);  
 

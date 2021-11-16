@@ -113,18 +113,6 @@ void rel_destructor(rel_t *r){
   r->used = 0;
 }
 
-// void tuple_print(tuple_t t){
-//   printf("(%s %s) ",t.x, t.y);
-// }
-
-// void rel_print(rel_t *r){
-//   printf("R ");
-//   for(unsigned int i = 0; i < r->used; i++){
-//     tuple_print(r->arr[i]);
-//   }
-//   printf("\n");
-// }
-
 int main(int argc, char *argv[]){
   (void) argc;
   (void) argv;

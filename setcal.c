@@ -236,24 +236,13 @@ int new_vec(vec_t *v, FILE *f){
  * @brief populate relaiton from file
  */
 
-void str_clean(char *s){
-  for (unsigned int i = 0; i < strlen(s); i++){
-    if (!isalnum(s[i])){
-      for (unsigned j = i; j < strlen(s); j++){
-        s[j] = s[j+1];
-      }
-    }
-  }
-}
-
 int new_rel(rel_t *r, FILE *f){
   char c;
   while ((c = fgetc(f)) != EOF && !iscntrl(c)){
     char *s1 = malloc(MAX_ELEM_LEN * sizeof(char)); // FIXME free somewhere
     char *s2 = malloc(MAX_ELEM_LEN * sizeof(char)); // FIXME free somewhere
-    fscanf(f, "%s %s", s1, s2);
-    str_clean(s1);
-    str_clean(s2);
+    fscanf(f, "(%s %s", s1, s2);
+    s2[strlen(s2) - 1] = '\0';
     rel_append(r, s1, s2);
   }
   return 0;
@@ -269,6 +258,16 @@ int main(int argc, char *argv[]){
   
   vec_t universe;
   vec_constructor(&universe, 0);
+
+  vrel_t relations;
+  if (!vrel_constructor(&relations)){
+    // TODO handle vector of relations malloc failed
+    return 1;
+  }
+  if (!rel_constructor(&(relations.arr[0]), 0)){
+    // TODO handle relation malloc failed
+    return 1;
+  }
   
   int line_type = get_line_type(fp);
   while(line_type){
@@ -278,6 +277,7 @@ int main(int argc, char *argv[]){
         break;
       case R:
         // TODO new relation
+        new_rel(&relations.arr[0], fp);
         break;
       case C:
         // TODO new command
@@ -309,23 +309,10 @@ int main(int argc, char *argv[]){
   // vec_print(&vectors.arr[0], 'S');
   // vec_destructor(&vectors.arr[0]);
 
-
-  vrel_t relations;
-  if (!vrel_constructor(&relations)){
-    // TODO handle vector of relations malloc failed
-    printf("> vrel malloc failed\n");
-    return 1;
-  }
-  if (!rel_constructor(&(relations.arr[0]), 0)){
-    // TODO handle relation malloc failed
-    printf("> main: rel malloc failed\n");
-    return 1;
-  }
-  // new_rel(&relations.arr[0], fp);
-  rel_append(&relations.arr[0], "test", "retest");
-  rel_append(&relations.arr[0], "name", "surname");
-  rel_append(&relations.arr[0], "Jakub", "Dugovic");
-  rel_append(&relations.arr[0], "ruka", "noha");
+  // rel_append(&relations.arr[0], "test", "retest");
+  // rel_append(&relations.arr[0], "name", "surname");
+  // rel_append(&relations.arr[0], "Jakub", "Dugovic");
+  // rel_append(&relations.arr[0], "ruka", "noha");
   rel_print(&relations.arr[0]);
   rel_destructor(&relations.arr[0]);
 

@@ -195,25 +195,26 @@ FILE *process_args(int argc, char *argv[]){
  * @brief read first letter on a line
  */
 
-int get_line_type(FILE *f){
+int get_line_type(int *var, FILE *f){
   char c;
   if ((c = fgetc(f)) != EOF){
     if (c == 'U'){
-      return U;
+      *var = U;
     }
     else if (c == 'S'){
-      return S;
+      *var = S;
     }
     else if (c == 'R'){
-      return R;
+      *var = R;
     }
     else if (c == 'C'){
-      return C;
+      *var = C;
     } else if (iscntrl(c)){
-      get_line_type(f);
+      get_line_type(var, f);
     } else {
       // TODO handle invalid input
     }
+    return 1;
   }
   return 0;
 }
@@ -264,58 +265,56 @@ int main(int argc, char *argv[]){
     // TODO handle vector of relations malloc failed
     return 1;
   }
-  if (!rel_constructor(&(relations.arr[0]), 0)){
-    // TODO handle relation malloc failed
-    return 1;
-  }
-  
-  int line_type = get_line_type(fp);
-  while(line_type){
-    switch (line_type){
-      case S:
-        // TODO new vector
-        break;
-      case R:
-        // TODO new relation
-        new_rel(&relations.arr[0], fp);
-        break;
-      case C:
-        // TODO new command
-        break;
-      case U:
-        new_vec(&universe, fp);
-        vec_print(&universe, 'U');
-        break;
-    }
-    line_type = get_line_type(fp);
-  }
-  // TODO handle EOF
-  vec_destructor(&universe);
-
   vvec_t vectors;
   if (!vvec_constructor(&vectors)){
     // TODO handle vector malloc failed
     return 1;
   }
   
-  // if (!vec_constructor(&(vectors.arr[0]), 0)){
-  //   // throw err "Vector construction failed"
-  //   return 1;
-  // }
-  // vec_append(&vectors.arr[0], "test");
-  // vec_append(&vectors.arr[0], "name");
-  // vec_append(&vectors.arr[0], "Jakub");
-  // vec_append(&vectors.arr[0], "ruka");
-  // vec_print(&vectors.arr[0], 'S');
-  // vec_destructor(&vectors.arr[0]);
+  int line_type;
+  int vec_count = 0;
+  int rel_count = 0;
+  for (int i = 0; get_line_type(&line_type, fp); i++){
+    switch (line_type){
+      case S:
+        // TODO new vector
+        printf("> switch: new vector\n");
+        if (!vec_constructor(&(vectors.arr[vec_count]), i)){
+          // throw err "Vector construction failed"
+          return 1;
+        }
+        new_vec(&vectors.arr[vec_count], fp);
+        vec_count++;
+        break;
+      case R:
+        // TODO new relation
+        printf("> switch: new relation\n");
+        if (!rel_constructor(&(relations.arr[rel_count]), i)){
+          // TODO handle relation malloc failed
+          return 1;
+        }
+        new_rel(&relations.arr[rel_count], fp);
+        rel_count++;
+        break;
+      case C:
+        printf("> switch: new command\n");
+        // TODO new command
+        break;
+      case U:
+        printf("> switch: new universe\n");
+        new_vec(&universe, fp);
+        vec_print(&universe, 'U');
+        break;
+    }
+  }
+  // TODO handle EOF
+  vec_print(&vectors.arr[0], 'S');
+  vec_destructor(&vectors.arr[0]);
 
-  // rel_append(&relations.arr[0], "test", "retest");
-  // rel_append(&relations.arr[0], "name", "surname");
-  // rel_append(&relations.arr[0], "Jakub", "Dugovic");
-  // rel_append(&relations.arr[0], "ruka", "noha");
   rel_print(&relations.arr[0]);
   rel_destructor(&relations.arr[0]);
 
+  vec_destructor(&universe);
   vvec_destructor(&vectors);
   vrel_destructor(&relations);
   fclose(fp);

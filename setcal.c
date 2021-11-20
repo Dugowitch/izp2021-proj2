@@ -243,7 +243,7 @@ int new_rel(rel_t *r, FILE *f){
     char *s1 = malloc(MAX_ELEM_LEN * sizeof(char)); // FIXME free somewhere
     char *s2 = malloc(MAX_ELEM_LEN * sizeof(char)); // FIXME free somewhere
     fscanf(f, "(%s %s", s1, s2);
-    s2[strlen(s2) - 1] = '\0';
+    s2[strlen(s2) - 1] = '\0'; //removes unwanted bracket
     rel_append(r, s1, s2);
   }
   return 0;
@@ -277,17 +277,15 @@ int main(int argc, char *argv[]){
   for (int i = 0; get_line_type(&line_type, fp); i++){
     switch (line_type){
       case S:
-        // TODO new vector
         printf("> switch: new vector\n");
         if (!vec_constructor(&(vectors.arr[vec_count]), i)){
-          // throw err "Vector construction failed"
+          // TODO handle vector construction failed
           return 1;
         }
         new_vec(&vectors.arr[vec_count], fp);
         vec_count++;
         break;
       case R:
-        // TODO new relation
         printf("> switch: new relation\n");
         if (!rel_constructor(&(relations.arr[rel_count]), i)){
           // TODO handle relation malloc failed
@@ -308,6 +306,7 @@ int main(int argc, char *argv[]){
     }
   }
   // TODO handle EOF
+  
   vec_print(&vectors.arr[0], 'S');
   vec_destructor(&vectors.arr[0]);
 
@@ -315,6 +314,14 @@ int main(int argc, char *argv[]){
   rel_destructor(&relations.arr[0]);
 
   vec_destructor(&universe);
+  // destruct all vectors in vectors->arr
+  for (int i = 0; i < vec_count; i++){
+    vec_destructor(&(vectors.arr[i]));
+  }
+  // destruct all relations in relations->arr
+  for (int i = 0; i < rel_count; i++){
+    rel_destructor(&(relations.arr[i]));
+  }
   vvec_destructor(&vectors);
   vrel_destructor(&relations);
   fclose(fp);

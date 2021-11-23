@@ -145,8 +145,6 @@ void vvec_destructor(vvec_t *v){
     free(v->arr);
     v->arr = NULL;
   }
-  v->size = 0;
-  v->used = 0;
 }
 
 /**
@@ -175,8 +173,6 @@ void vrel_destructor(vrel_t *r){
     free(r->arr);
     r->arr = NULL;
   }
-  r->size = 0;
-  r->used = 0;
 }
 
 /**
@@ -226,7 +222,7 @@ int get_line_type(int *var, FILE *f){
 int new_vec(vec_t *v, FILE *f){
   char c;
   while ((c = fgetc(f)) != EOF && !iscntrl(c)){
-    char *s = malloc(MAX_ELEM_LEN * sizeof(char)); // FIXME free somewhere
+    char *s = malloc(MAX_ELEM_LEN * sizeof(char)); // FIXME free somewhere or strcpy???
     fscanf(f, "%s", s);
     vec_append(v, s);
   }
@@ -240,8 +236,8 @@ int new_vec(vec_t *v, FILE *f){
 int new_rel(rel_t *r, FILE *f){
   char c;
   while ((c = fgetc(f)) != EOF && !iscntrl(c)){
-    char *s1 = malloc(MAX_ELEM_LEN * sizeof(char)); // FIXME free somewhere
-    char *s2 = malloc(MAX_ELEM_LEN * sizeof(char)); // FIXME free somewhere
+    char *s1 = malloc(MAX_ELEM_LEN * sizeof(char)); // FIXME free somewhere or strcpy???
+    char *s2 = malloc(MAX_ELEM_LEN * sizeof(char)); // FIXME free somewhere or strcpy???
     fscanf(f, "(%s %s", s1, s2);
     s2[strlen(s2) - 1] = '\0'; //removes unwanted bracket
     rel_append(r, s1, s2);

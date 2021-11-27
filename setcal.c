@@ -301,6 +301,46 @@ int new_rel(rel_t *r, FILE *f){
   return 0;
 }
 
+/* ======================================= SET OPERATIONS START ======================================= */
+/**
+ * @brief the set on line v1 minus the set on line v2
+ * @param v1 number of line of the first set
+ * @param v2 number of line of the second set
+ */
+int minus(vvec_t *vectors, unsigned int v1, unsigned int v2){
+  vec_t result;
+  vec_constructor(&result, -1);
+  int v1_idx = -1;
+  int v2_idx = -1;
+  for (unsigned int i = 0; i <= vectors->used; i++){
+    if (vectors->arr[i].line == v1 -1){
+      v1_idx = i;
+    }
+    if (vectors->arr[i].line == v2 -1){
+      v2_idx = i;
+    }
+  }
+  if (v1_idx == -1 || v2_idx == -1){
+    // TODO handle error - line not found
+    return 1;
+  }
+  for (unsigned int j = 0; j < vectors->arr[v1_idx].used; j++){
+    int same = 0; 
+    for (unsigned int k = 0; k < vectors->arr[v2_idx].used; k++){
+      if (!strcmp(vectors->arr[v1_idx].arr[j], vectors->arr[v2_idx].arr[k])){
+        same = 1;
+      }
+    }
+    if (!same){
+      vec_append(&result, vectors->arr[v1_idx].arr[j]);
+    }
+  }
+  vec_print(&result, 'S');
+  vec_destructor(&result);
+  return 0;
+}
+/* ======================================= SET OPERATIONS END ======================================= */
+
 /* ======================================= RELATION OPERATIONS START ======================================= */
 /**
  * @brief find if relation on given line exist
@@ -450,6 +490,131 @@ void function_rel(vrel_t *relations, int arr_position) {
 }
 /* ======================================= RELATION OPERATIONS END ======================================= */
 
+
+/**
+ * @brief get command and params
+ * @param command pointer to string - command name
+ * @param params pointer to int arr - param(s) of command
+ */
+int get_command(FILE *f, char *command, unsigned int *params){
+  fscanf(f, "%s", command);
+  int counter = 0;
+  char temp;
+  while (((temp = fgetc(f))) != EOF){
+    if (iscntrl(temp)){
+      break;
+    }
+    if (temp == ' ')
+      continue;
+    if ('0' <= temp && temp <= '9'){
+      params[counter] = temp - '0';
+      counter++;
+      continue;
+    }
+    return 1;
+  }
+  return 0;
+}
+
+/**
+ * @brief call command with appropriate params
+ * @param command name of the command to call
+ * @param params pointer to int arr - param(s) of command
+ * @param universe
+ * @param vectors vector of all vectors
+ * @param relations vector of all relations
+ */
+int call_command(char *command, unsigned int *params, vec_t *universe, vvec_t *vectors, vrel_t *relations){
+  // printf("> call command started\n");
+  (void)(command);
+  (void)(universe);
+  (void)(relations);
+
+  if (!strcmp(command, "empty")){
+    // empty A - tiskne true nebo false podle toho, jestli je množina definovaná na řádku A prázdná nebo neprázdná.
+    
+  }
+  else if (!strcmp(command, "card")){
+    // card A - tiskne počet prvků v množině A (definované na řádku A).
+
+  }
+  else if (!strcmp(command, "complement")){
+    // complement A - tiskne doplněk množiny A.
+
+  }
+  else if (!strcmp(command, "union")){
+    // union A B - tiskne sjednocení množin A a B.
+
+  }
+  else if (!strcmp(command, "intersect")){
+    // intersect A B - tiskne průnik množin A a B.
+
+  }
+  else if (!strcmp(command, "minus")){
+    // minus A B - tiskne rozdíl množin A \ B.
+    int res = minus(vectors, params[0], params[1]);
+    if (res){
+      fprintf(stderr, "command minus failed to execute, too few parameters\n");
+    }
+  }
+  else if (!strcmp(command, "subsequent")){
+    // subseteq A B - tiskne true nebo false podle toho, jestli je množina A podmnožinou množiny B.
+
+  }
+  else if (!strcmp(command, "subset")){
+    // subset A B - tiskne true nebo false, jestli je množina A vlastní podmnožina množiny B.
+
+  }
+  else if (!strcmp(command, "equals")){
+    // equals A B - tiskne true nebo false, jestli jsou množiny rovny.
+
+  }
+  else if (!strcmp(command, "reflexive")){
+    // reflexive R - tiskne true nebo false, jestli je relace reflexivní.
+
+  }
+  else if (!strcmp(command, "symmetric")){
+    // symmetric R - tiskne true nebo false, jestli je relace symetrická.
+
+  }
+  else if (!strcmp(command, "antisymmetric")){
+    // antisymmetric R - tiskne true nebo false, jestli je relace antisymetrická.
+
+  }
+  else if (!strcmp(command, "transitive")){
+    // transitive R - tiskne true nebo false, jestli je relace tranzitivní.
+
+  }
+  else if (!strcmp(command, "function")){
+    // function R - tiskne true nebo false, jestli je relace R funkcí.
+
+  }
+  else if (!strcmp(command, "domain")){
+    // domain R - tiskne definiční obor funkce R (lze aplikovat i na relace - první prvky dvojic).
+
+  }
+  else if (!strcmp(command, "codomain")){
+    // codomain R - tiskne obor hodnot funkce R (lze aplikovat i na relace - druhé prvky dvojic).
+
+  }
+  else if (!strcmp(command, "injective")){
+    // injective R - tiskne true nebo false, jestli je funkce R injektivní.
+
+  }
+  else if (!strcmp(command, "surjective")){
+    // surjective R - tiskne true nebo false, jestli je funkce R surjektivní.
+
+  }
+  else if (!strcmp(command, "bijective")){
+    // bijective R - tiskne true nebo false, jestli je funkce R bijektivní.
+
+  }
+  else {
+    // bonus commands are not implemented
+  }
+  return 0;
+}
+
 int main(int argc, char *argv[]){
   FILE *fp;
   if (!(fp = process_args(argc, argv))){
@@ -485,6 +650,7 @@ int main(int argc, char *argv[]){
           return 1;
         }
         new_vec(&vectors.arr[vec_count], fp);
+        vectors.used++;
         vec_count++;
         break;
       case R:
@@ -494,11 +660,18 @@ int main(int argc, char *argv[]){
           return 1;
         }
         new_rel(&relations.arr[rel_count], fp);
+        relations.used++;
         rel_count++;
         break;
-      case C:
+      case C: ;
+        char command[MAX_ELEM_LEN];
+        unsigned int params[2] = {-1, -1};
         printf("> switch: new command\n");
-        // TODO new command
+        int successful = get_command(fp, &command[0], &params[0]);
+        if (successful){
+          // TODO error - handle improper command formatting
+        }
+        call_command(&command[0], &params[0], &universe, &vectors, &relations);
         break;
       case U:
         printf("> switch: new universe\n");
@@ -548,22 +721,22 @@ int main(int argc, char *argv[]){
   }
   */
   /* ============== EXEMPLE OF RELATION OPERATIONS USAGE (DELETE AFTER PARSING IMPLEMENTATION) ============== */
+  // vec_print(&vectors.arr[0], 'S');
+  // vec_destructor(&vectors.arr[0]);
 
-  vec_print(&vectors.arr[0], 'S');
-  vec_destructor(&vectors.arr[0]);
+  // rel_print(&relations.arr[0]);
+  // rel_destructor(&relations.arr[0]);
 
-  rel_print(&relations.arr[0]);
-  rel_destructor(&relations.arr[0]);
+  // vec_destructor(&universe);
+  // // destruct all vectors in vectors->arr
+  // for (int i = 0; i < vec_count; i++){
+  //   vec_destructor(&(vectors.arr[i]));
+  // }
+  // // destruct all relations in relations->arr
+  // for (int i = 0; i < rel_count; i++){
+  //   rel_destructor(&(relations.arr[i]));
+  // }
 
-  vec_destructor(&universe);
-  // destruct all vectors in vectors->arr
-  for (int i = 0; i < vec_count; i++){
-    vec_destructor(&(vectors.arr[i]));
-  }
-  // destruct all relations in relations->arr
-  for (int i = 0; i < rel_count; i++){
-    rel_destructor(&(relations.arr[i]));
-  }
   vvec_destructor(&vectors);
   vrel_destructor(&relations);
   fclose(fp);

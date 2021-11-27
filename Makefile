@@ -19,5 +19,13 @@ test:
 	@echo "S boy girl"
 	@echo "true"
 
+rel:
+	gcc -std=c99 -Wall -Wextra -Werror setcal.c -o setcal
+	./setcal rel.txt
+
+sets:
+	gcc -std=c99 -Wall -Wextra -Werror setcal.c -o setcal
+	./setcal sets.txt
+
 clear:
 	rm setcal

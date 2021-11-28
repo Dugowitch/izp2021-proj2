@@ -350,7 +350,7 @@ int minus(vvec_t *vectors, unsigned int v1, unsigned int v2){
  */
 int find_relation(vrel_t *relations, unsigned int line) {
   for (unsigned int i = 0; i <= 10; i++) {                  //TODO cycle until what?
-    if (relations->arr[i].line == line - 1) {
+    if (relations->arr[i].line == (line - 1)) {
       return i;
     }
   }
@@ -523,12 +523,10 @@ int get_command(FILE *f, char *command, unsigned int *params){
  * @param universe
  * @param vectors vector of all vectors
  * @param relations vector of all relations
+ * @return 0 in case of success, 1 otherwise
  */
 int call_command(char *command, unsigned int *params, vec_t *universe, vvec_t *vectors, vrel_t *relations){
   // printf("> call command started\n");
-  (void)(command);
-  (void)(universe);
-  (void)(relations);
 
   if (!strcmp(command, "empty")){
     // empty A - tiskne true nebo false podle toho, jestli je množina definovaná na řádku A prázdná nebo neprázdná.
@@ -552,9 +550,9 @@ int call_command(char *command, unsigned int *params, vec_t *universe, vvec_t *v
   }
   else if (!strcmp(command, "minus")){
     // minus A B - tiskne rozdíl množin A \ B.
-    int res = minus(vectors, params[0], params[1]);
-    if (res){
-      fprintf(stderr, "command minus failed to execute, too few parameters\n");
+    if (minus(vectors, params[0], params[1])){
+      fprintf(stderr, "Error: command minus failed to execute, too few parameters\n");
+      return 1;
     }
   }
   else if (!strcmp(command, "subsequent")){
@@ -571,23 +569,53 @@ int call_command(char *command, unsigned int *params, vec_t *universe, vvec_t *v
   }
   else if (!strcmp(command, "reflexive")){
     // reflexive R - tiskne true nebo false, jestli je relace reflexivní.
-
+    int arr_position;
+    if ((arr_position = find_relation(relations, params[0])) != -1) {
+      reflexive_rel(universe, relations, arr_position);
+    } else {
+      fprintf(stderr, "Error: there aren't relation(R) on given line (line %d)\n", params[0]);
+      return 1;
+    }
   }
   else if (!strcmp(command, "symmetric")){
     // symmetric R - tiskne true nebo false, jestli je relace symetrická.
-
+    int arr_position;
+    if ((arr_position = find_relation(relations, params[0])) != -1) {
+      symmetric_rel(relations, arr_position);
+    } else {
+      fprintf(stderr, "Error: there aren't relation(R) on given line (line %d)\n", params[0]);
+      return 1;
+    }
   }
   else if (!strcmp(command, "antisymmetric")){
     // antisymmetric R - tiskne true nebo false, jestli je relace antisymetrická.
-
+    int arr_position;
+    if ((arr_position = find_relation(relations, params[0])) != -1) {
+      antisymmetric_rel(relations, arr_position);
+    } else {
+      fprintf(stderr, "Error: there aren't relation(R) on given line (line %d)\n", params[0]);
+      return 1;
+    }
   }
   else if (!strcmp(command, "transitive")){
     // transitive R - tiskne true nebo false, jestli je relace tranzitivní.
-
+    int arr_position;
+    if ((arr_position = find_relation(relations, params[0])) != -1) {
+      transitive_rel(relations, arr_position);
+    } else {
+      fprintf(stderr, "Error: there aren't relation(R) on given line (line %d)\n", params[0]);
+      return 1;
+    }
   }
   else if (!strcmp(command, "function")){
     // function R - tiskne true nebo false, jestli je relace R funkcí.
-
+    int arr_position;
+    if ((arr_position = find_relation(relations, params[0])) != -1) {
+      function_rel(relations, arr_position);
+    } else {
+      fprintf(stderr, "Error: there aren't relation(R) on given line (line %d)\n", params[0]);
+      return 1;
+    }
   }
   else if (!strcmp(command, "domain")){
     // domain R - tiskne definiční obor funkce R (lze aplikovat i na relace - první prvky dvojic).
@@ -671,7 +699,9 @@ int main(int argc, char *argv[]){
         if (successful){
           // TODO error - handle improper command formatting
         }
-        call_command(&command[0], &params[0], &universe, &vectors, &relations);
+        if (call_command(&command[0], &params[0], &universe, &vectors, &relations)) {
+          return 1;
+        }
         break;
       case U:
         printf("> switch: new universe\n");
@@ -682,45 +712,6 @@ int main(int argc, char *argv[]){
   }
   // TODO handle EOF
 
-  /* ============== EXEMPLE OF RELATION OPERATIONS USAGE (DELETE AFTER PARSING IMPLEMENTATION) ============== */
-  /*
-  int arr_position;
-  if ((arr_position = find_relation(&relations, 2)) != -1) {
-    reflexive_rel(&universe, &relations, arr_position);
-  } else {
-    fprintf(stderr, "Error: there aren't relation(R) on given line");
-    return 1;
-  }
-
-  if ((arr_position = find_relation(&relations, 3)) != -1) {
-    symmetric_rel(&relations, arr_position);
-  } else {
-    fprintf(stderr, "Error: there aren't relation(R) on given line");
-    return 1;
-  }
-
-  if ((arr_position = find_relation(&relations, 2)) != -1) {
-    antisymmetric_rel(&relations, arr_position);
-  } else {
-    fprintf(stderr, "Error: there aren't relation(R) on given line");
-    return 1;
-  }
-
-  if ((arr_position = find_relation(&relations, 3)) != -1) {
-    transitive_rel(&relations, arr_position);
-  } else {
-    fprintf(stderr, "Error: there aren't relation(R) on given line");
-    return 1;
-  }
-  
-  if ((arr_position = find_relation(&relations, 3)) != -1) {
-    function_rel(&relations, arr_position);
-  } else {
-    fprintf(stderr, "Error: there aren't relation(R) on given line");
-    return 1;
-  }
-  */
-  /* ============== EXEMPLE OF RELATION OPERATIONS USAGE (DELETE AFTER PARSING IMPLEMENTATION) ============== */
   // vec_print(&vectors.arr[0], 'S');
   // vec_destructor(&vectors.arr[0]);
 

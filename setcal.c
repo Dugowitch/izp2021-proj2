@@ -14,6 +14,7 @@
 #define MAX_ELEM_LEN 31
 #define ALLOC_CONST 10
 enum {ERR, U, S, R, C};
+enum {SUBSET, SUBSETEQ, EQUALS}; //subset_equal function modes
 
 /**
  * @brief vector structure
@@ -303,25 +304,36 @@ int new_rel(rel_t *r, FILE *f){
 
 /* ======================================= SET OPERATIONS START ======================================= */
 /**
- * @brief the set on line v1 minus the set on line v2
+ * @brief finds index of vector in vecotrs.arr
+ * @param v1 number of line of the first set
+ * @param v2 number of line of the second set
+ */
+int get_param_idx(vvec_t *vectors, unsigned int v1, unsigned int v2, unsigned int *v1_idx, unsigned int *v2_idx){
+  for (unsigned int i = 0; i <= vectors->used; i++){
+    if (vectors->arr[i].line == v1 - 1){
+      *v1_idx = i;
+    }
+    if (vectors->arr[i].line == v2 - 1){
+      *v2_idx = i;
+    }
+  }
+  if ((int)(*v1_idx) == -1 || (int)(*v2_idx) == -1){
+    return 1;
+  }
+  return 0;
+} 
+
+/**
+ * @brief the set on the line v1 minus the set on the line v2
  * @param v1 number of line of the first set
  * @param v2 number of line of the second set
  */
 int minus(vvec_t *vectors, unsigned int v1, unsigned int v2){
   vec_t result;
   vec_constructor(&result, -1);
-  int v1_idx = -1;
-  int v2_idx = -1;
-  for (unsigned int i = 0; i <= vectors->used; i++){
-    if (vectors->arr[i].line == v1 -1){
-      v1_idx = i;
-    }
-    if (vectors->arr[i].line == v2 -1){
-      v2_idx = i;
-    }
-  }
-  if (v1_idx == -1 || v2_idx == -1){
-    // TODO handle error - line not found
+  unsigned int v1_idx = -1;
+  unsigned int v2_idx = -1;
+  if(get_param_idx(vectors, v1, v2, &v1_idx, &v2_idx)){
     return 1;
   }
   for (unsigned int j = 0; j < vectors->arr[v1_idx].used; j++){
@@ -339,6 +351,52 @@ int minus(vvec_t *vectors, unsigned int v1, unsigned int v2){
   vec_destructor(&result);
   return 0;
 }
+
+/**
+ * @brief prints true or false if the set on the line v1 MODE the set on the line v2 
+ * @param v1 number of line of the first set
+ * @param v2 number of line of the second set
+ * @param mode subseteq/subset/equals
+ */
+int subset_equal(vvec_t *vectors, unsigned int v1, unsigned int v2, int mode){
+  unsigned int v1_idx = -1;
+  unsigned int v2_idx = -1;
+  if(get_param_idx(vectors, v1, v2, &v1_idx, &v2_idx) == 1){
+    return 1;
+  }
+  int result = 1;
+  unsigned int same_counter = 0;
+  for (unsigned int i = 0; i < vectors->arr[v1_idx].used; i++){
+    int same = 0;
+    for (unsigned int j = 0; j < vectors->arr[v2_idx].used; j++){
+      if (!strcmp(vectors->arr[v1_idx].arr[i], vectors->arr[v2_idx].arr[j])){
+        same = 1;
+        same_counter++;
+      }
+    }
+    if (!same){
+      result = 0;
+      break;
+    }
+  }
+  if(!result)
+    printf("false\n");
+  else if (mode == SUBSETEQ)
+    printf("true\n");
+  else if (mode == SUBSET){
+    if (same_counter >= vectors->arr[v2_idx].used)
+      printf("false\n");
+    else 
+      printf("true\n");
+  } else { // mode == EQUALS
+    if (same_counter != vectors->arr[v2_idx].used)
+      printf("false\n");
+    else 
+      printf("true\n");
+  }
+  return 0;
+}
+
 /* ======================================= SET OPERATIONS END ======================================= */
 
 /* ======================================= RELATION OPERATIONS START ======================================= */
@@ -551,21 +609,30 @@ int call_command(char *command, unsigned int *params, vec_t *universe, vvec_t *v
   else if (!strcmp(command, "minus")){
     // minus A B - tiskne rozdíl množin A \ B.
     if (minus(vectors, params[0], params[1])){
-      fprintf(stderr, "Error: command minus failed to execute, too few parameters\n");
+      fprintf(stderr, "Error: command minus failed to execute\n");
       return 1;
     }
   }
-  else if (!strcmp(command, "subsequent")){
+  else if (!strcmp(command, "subseteq")){
     // subseteq A B - tiskne true nebo false podle toho, jestli je množina A podmnožinou množiny B.
-
+    if (subset_equal(vectors, params[0], params[1], SUBSETEQ)){
+      fprintf(stderr, "Error: command subseteq failed to execute\n");
+      return 1;
+    }
   }
   else if (!strcmp(command, "subset")){
     // subset A B - tiskne true nebo false, jestli je množina A vlastní podmnožina množiny B.
-
+    if (subset_equal(vectors, params[0], params[1], SUBSET)){
+      fprintf(stderr, "Error: command subseteq failed to execute\n");
+      return 1;
+    }
   }
   else if (!strcmp(command, "equals")){
     // equals A B - tiskne true nebo false, jestli jsou množiny rovny.
-
+    if (subset_equal(vectors, params[0], params[1], EQUALS)){
+      fprintf(stderr, "Error: command subseteq failed to execute\n");
+      return 1;
+    }
   }
   else if (!strcmp(command, "reflexive")){
     // reflexive R - tiskne true nebo false, jestli je relace reflexivní.

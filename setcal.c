@@ -1,7 +1,7 @@
 // IZP 2021/2020
 // Projekt 2 - Práce s datovými strukturami
 
-// Name Holder (xlogin00)
+// Lukáš Matuška (xmatus38)
 // Jakub Dugovič (xdugov00)
 // Verevkin Aleksandr (xverev00)
 // Martin Hrdlička (xhrdli15)

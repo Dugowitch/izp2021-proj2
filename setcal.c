@@ -1,7 +1,7 @@
 // IZP 2021/2020
 // Projekt 2 - Práce s datovými strukturami
 
-// Name Holder (xlogin00) //TODO
+// Name Holder (xlogin00)
 // Jakub Dugovič (xdugov00)
 // Verevkin Aleksandr (xverev00)
 // Martin Hrdlička (xhrdli15)
@@ -64,7 +64,7 @@ int vec_constructor(vec_t *v, unsigned int line){
  */
 int vec_append(vec_t *v, char* elem){
   if (v->used == v->size) {
-    v->arr = realloc(v->arr, (v->size + ALLOC_CONST) * sizeof(char) * MAX_ELEM_LEN); // FIXME ??? use temporary variable and check if realloc is successful
+    v->arr = realloc(v->arr, (v->size + ALLOC_CONST) * sizeof(char) * MAX_ELEM_LEN);
     if (v->arr == NULL){
       // realloc failed
       return 0;
@@ -143,7 +143,7 @@ int rel_constructor(rel_t *r, unsigned int line){
  */
 int rel_append(rel_t *r, char* elem1, char* elem2){
   if (r->used == r->size){
-    r->arr = realloc(r->arr, (r->size + ALLOC_CONST) * 2 * sizeof(char) * MAX_ELEM_LEN); // FIXME ??? use temporary variable and check if realloc is successful
+    r->arr = realloc(r->arr, (r->size + ALLOC_CONST) * 2 * sizeof(char) * MAX_ELEM_LEN);
     if (r->arr == NULL){
       // realloc failed
       return 0;
@@ -210,7 +210,6 @@ typedef struct {
 int vrel_constructor(vrel_t *r){
   r->arr = malloc(ALLOC_CONST * sizeof(rel_t));
   if (r->arr == NULL){
-    // malloc failed
     return 0;
   }
   r->size = ALLOC_CONST;
@@ -263,7 +262,8 @@ int get_line_type(int *var, FILE *f){
     } else if (iscntrl(c)){
       get_line_type(var, f);
     } else {
-      // TODO handle invalid input
+      fprintf(stderr, "improper line formatting");
+      return 0;
     }
     return 1;
   }
@@ -278,7 +278,7 @@ int get_line_type(int *var, FILE *f){
 int new_vec(vec_t *v, FILE *f){
   char c;
   while ((c = fgetc(f)) != EOF && !iscntrl(c)){
-    char *s = malloc(MAX_ELEM_LEN * sizeof(char)); // FIXME free somewhere or strcpy???
+    char *s = malloc(MAX_ELEM_LEN * sizeof(char)); // FIXME free somewhere
     fscanf(f, "%s", s);
     vec_append(v, s);
   }
@@ -293,8 +293,8 @@ int new_vec(vec_t *v, FILE *f){
 int new_rel(rel_t *r, FILE *f){
   char c;
   while ((c = fgetc(f)) != EOF && !iscntrl(c)){
-    char *s1 = malloc(MAX_ELEM_LEN * sizeof(char)); // FIXME free somewhere or strcpy???
-    char *s2 = malloc(MAX_ELEM_LEN * sizeof(char)); // FIXME free somewhere or strcpy???
+    char *s1 = malloc(MAX_ELEM_LEN * sizeof(char)); // FIXME free somewhere
+    char *s2 = malloc(MAX_ELEM_LEN * sizeof(char)); // FIXME free somewhere
     fscanf(f, "(%s %s", s1, s2);
     s2[strlen(s2) - 1] = '\0'; //removes unwanted bracket
     rel_append(r, s1, s2);
@@ -407,7 +407,7 @@ int subset_equal(vvec_t *vectors, unsigned int v1, unsigned int v2, int mode){
  * @return array index of relation in case of success, else -1
  */
 int find_relation(vrel_t *relations, unsigned int line) {
-  for (unsigned int i = 0; i <= 10; i++) {                  //TODO cycle until what?
+  for (unsigned int i = 0; i <= 10; i++) {                  //TODO cycle until what? // FIXME remove magic constant - 10
     if (relations->arr[i].line == (line - 1)) {
       return i;
     }
@@ -575,7 +575,7 @@ int get_command(FILE *f, char *command, unsigned int *params){
 }
 
 /**
- * @brief call command with appropriate params
+ * @brief call command based on command name with appropriate params
  * @param command name of the command to call
  * @param params pointer to int arr - param(s) of command
  * @param universe
@@ -712,7 +712,7 @@ int call_command(char *command, unsigned int *params, vec_t *universe, vvec_t *v
 
 int main(int argc, char *argv[]){
   FILE *fp;
-  if (!(fp = process_args(argc, argv))){
+  if ((fp = process_args(argc, argv)) == NULL){
     fprintf(stderr, "Error: fail during file reading\n"
                     "    program start form:\n"
                     "    ./setcal FILE\n");
@@ -724,12 +724,12 @@ int main(int argc, char *argv[]){
 
   vrel_t relations;
   if (!vrel_constructor(&relations)){
-    // TODO handle vector of relations malloc failed
+    fprintf(stderr, "malloc failed");
     return 1;
   }
   vvec_t vectors;
   if (!vvec_constructor(&vectors)){
-    // TODO handle vector malloc failed
+    fprintf(stderr, "malloc failed");
     return 1;
   }
   
@@ -741,7 +741,7 @@ int main(int argc, char *argv[]){
       case S:
         printf("> switch: new vector\n");
         if (!vec_constructor(&(vectors.arr[vec_count]), i)){
-          // TODO handle vector construction failed
+          fprintf(stderr, "vector malloc failed");
           return 1;
         }
         new_vec(&vectors.arr[vec_count], fp);
@@ -751,7 +751,7 @@ int main(int argc, char *argv[]){
       case R:
         printf("> switch: new relation\n");
         if (!rel_constructor(&(relations.arr[rel_count]), i)){
-          // TODO handle relation malloc failed
+          fprintf(stderr, "relation malloc failed");
           return 1;
         }
         new_rel(&relations.arr[rel_count], fp);
@@ -764,7 +764,7 @@ int main(int argc, char *argv[]){
         printf("> switch: new command\n");
         int successful = get_command(fp, &command[0], &params[0]);
         if (successful){
-          // TODO error - handle improper command formatting
+          fprintf(stderr, "improper command formatting");
         }
         if (call_command(&command[0], &params[0], &universe, &vectors, &relations)) {
           return 1;
@@ -777,23 +777,10 @@ int main(int argc, char *argv[]){
         break;
     }
   }
-  // TODO handle EOF
+  // TODO handle EOF - is it needed here?
 
-  // vec_print(&vectors.arr[0], 'S');
-  // vec_destructor(&vectors.arr[0]);
-
-  // rel_print(&relations.arr[0]);
-  // rel_destructor(&relations.arr[0]);
-
-  // vec_destructor(&universe);
-  // // destruct all vectors in vectors->arr
-  // for (int i = 0; i < vec_count; i++){
-  //   vec_destructor(&(vectors.arr[i]));
-  // }
-  // // destruct all relations in relations->arr
-  // for (int i = 0; i < rel_count; i++){
-  //   rel_destructor(&(relations.arr[i]));
-  // }
+  // loop through the vec_t's in vvec_t and destroy all elements
+  // loop through the rel_t's in vrel_t and destroy all elements
 
   vvec_destructor(&vectors);
   vrel_destructor(&relations);

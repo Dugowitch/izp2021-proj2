@@ -558,6 +558,12 @@ int get_command(FILE *f, char *command, unsigned int *params){
   fscanf(f, "%s", command);
   int counter = 0;
   char temp;
+
+  /** 
+   * FIXME double and triple digit numbers
+   * maybe use isdigit() from ctype library
+  */
+
   while (((temp = fgetc(f))) != EOF){
     if (iscntrl(temp)){
       break;

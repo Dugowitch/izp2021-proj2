@@ -64,7 +64,7 @@ int vec_constructor(vec_t *v, unsigned int line){
  */
 int vec_append(vec_t *v, char *elem){
   if (v->used == v->size){
-    v->arr = realloc(v->arr, (v->size + ALLOC_CONST) * sizeof(char) * MAX_ELEM_LEN); // FIXME ??? use temporary variable and check if realloc is successful
+    v->arr = realloc(v->arr, (v->size + ALLOC_CONST) * sizeof(char) * MAX_ELEM_LEN);
     if (v->arr == NULL){
       // realloc failed
       return 0;
@@ -143,7 +143,7 @@ int rel_constructor(rel_t *r, unsigned int line){
  */
 int rel_append(rel_t *r, char *elem1, char *elem2){
   if (r->used == r->size){
-    r->arr = realloc(r->arr, (r->size + ALLOC_CONST) * 2 * sizeof(char) * MAX_ELEM_LEN); // FIXME ??? use temporary variable and check if realloc is successful
+    r->arr = realloc(r->arr, (r->size + ALLOC_CONST) * 2 * sizeof(char) * MAX_ELEM_LEN);
     if (r->arr == NULL){
       // realloc failed
       return 0;
@@ -316,11 +316,16 @@ int get_param_idx(vvec_t *vectors, unsigned int v1, unsigned int v2, unsigned in
     if (vectors->arr[i].line == v1 - 1){
       *v1_idx = i;
     }
-    if (vectors->arr[i].line == v2 - 1){
-      *v2_idx = i;
+    if(v2){
+      if (vectors->arr[i].line == v2 - 1){
+        *v2_idx = i;
+      }
+      if ((int)(*v2_idx) == -1){
+        return 1;
+      }
     }
   }
-  if ((int)(*v1_idx) == -1 || (int)(*v2_idx) == -1){
+  if ((int)(*v1_idx) == -1){
     return 1;
   }
   return 0;

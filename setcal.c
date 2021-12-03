@@ -13,18 +13,8 @@
 
 #define MAX_ELEM_LEN 31
 #define ALLOC_CONST 10
-enum{
-  ERR,
-  U,
-  S,
-  R,
-  C
-};
-enum{
-  SUBSET,
-  SUBSETEQ,
-  EQUALS
-}; // subset_equal function modes
+enum {ERR, U, S, R, C};
+enum{SUBSET, SUBSETEQ, EQUALS}; // subset_equal function modes
 
 /**
  * @brief vector structure
@@ -402,11 +392,14 @@ int subset_equal(vvec_t *vectors, unsigned int v1, unsigned int v2, int mode){
     else
       printf("true\n");
   }
-  else{ // mode == EQUALS
+  else if (mode == EQUALS){
     if (same_counter != vectors->arr[v2_idx].used)
       printf("false\n");
     else
       printf("true\n");
+  }
+  else {
+    return 1;
   }
   return 0;
 }
@@ -726,7 +719,7 @@ int call_command(char *command, unsigned int *params, vec_t *universe, vvec_t *v
 
 int main(int argc, char *argv[]){
   FILE *fp;
-  if (!(fp = process_args(argc, argv))){
+  if ((fp = process_args(argc, argv)) == NULL){
     fprintf(stderr, "Error: fail during file reading\n"
                     "    program start form:\n"
                     "    ./setcal FILE\n");

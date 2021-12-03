@@ -316,16 +316,11 @@ int get_param_idx(vvec_t *vectors, unsigned int v1, unsigned int v2, unsigned in
     if (vectors->arr[i].line == v1 - 1){
       *v1_idx = i;
     }
-    if(v2){
-      if (vectors->arr[i].line == v2 - 1){
-        *v2_idx = i;
-      }
-      if ((int)(*v2_idx) == -1){
-        return 1;
-      }
+    if (vectors->arr[i].line == v2 - 1){
+      *v2_idx = i;
     }
   }
-  if ((int)(*v1_idx) == -1){
+  if ((int)(*v1_idx) == -1 || (int)(*v2_idx) == -1){
     return 1;
   }
   return 0;
